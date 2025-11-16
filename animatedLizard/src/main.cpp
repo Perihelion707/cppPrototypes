@@ -5,7 +5,8 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
 //#include "../headerFiles/SquarePlayer.hpp"
-#include "SquarePlayer.cpp"
+#include "Lizard.cpp"
+//#include "BodySegment.cpp"
 #include <iostream>
 
 int getSign(int number) { return number / abs(number); }
@@ -32,29 +33,43 @@ sf::Vector2f getInputVector() {
   }
   return input_dir;
 }
+void updateLizard(Lizard liz){
+    liz.changeVelocity(getInputVector());
+    liz.updatePosition();
+    //liz.applyFriction();
+}
 
 int main() {
   sf::RenderWindow window(sf::VideoMode({1200, 800}), "MoveSquare",
                           sf::Style::None, sf::State::Windowed);
   window.setPosition(sf::Vector2i(0, 0));
   window.setFramerateLimit(60);
-  SquarePlayer sp;
 
-  sp.initializeSquare();
-  std::cout << "penis";
+  Lizard liz;
+  
+  sf::CircleShape testShape;
+  testShape.setPosition(sf::Vector2f(0,0));
+  testShape.setRadius(7);
+  
+  window.requestFocus();
 
   while (window.isOpen()) {
-    window.clear();
-    sp.changeVelocity(getInputVector());
-    sp.updatePosition();
-    sp.applyFriction();
     // RenderWindow
-    //window.draw(sp.square);
-    sf::RectangleShape rect;
-    rect.setPosition(sf::Vector2f(10,10));
-    rect.setSize(sf::Vector2f(100,100));
     //window.draw(rect);
-    window.draw(sp.square);
+
+    liz.changeVelocity(getInputVector());
+    liz.updatePosition();
+    liz.applyFriction();
+
+    testShape.setPosition(liz.getPosition());
+    //updateLizard(liz);
+    window.clear();
+    window.draw(testShape);
+    //window.draw(liz.rect);
+    //window.draw(liz.getBodySegmentsFromIndex(0).shape);
+    for(int i = 0;i < liz.body_parts.size();i++){
+      window.draw(liz.getBodySegmentsFromIndex(i).getShape());
+    }
     window.display();
     // test if escape is pressed to close app
     while (const std::optional event = window.pollEvent()) {
