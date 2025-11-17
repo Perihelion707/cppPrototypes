@@ -2,6 +2,7 @@
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -38,6 +39,40 @@ sf::Vector2f getInputVector() {
   }
   return input_dir;
 }
+
+sf::Angle turn() {
+  float turn_amount = 00;
+  float turn_speed = 40;
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+    turn_amount -= turn_speed;
+  }
+
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+    turn_amount += turn_speed;
+  }
+  return sf::degrees(turn_amount);
+}
+
+sf::Vector2f angleToVec2(sf::Angle angle) {
+  // soh o/h cah a/h toa o/a
+  float x = cos(angle.asRadians());
+  float y = sin(angle.asRadians());
+
+  return sf::Vector2f(x, y);
+}
+
+sf::Vector2f getTurnInput(sf::Angle angle) {
+  angle += turn();
+  float speed = 10;
+  sf::Vector2f input_dir;
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+    input_dir += angleToVec2(angle);
+    input_dir = input_dir.normalized() * speed;
+  }
+
+  return input_dir;
+}
+
 void updateLizard(Lizard liz) {
   liz.changeVelocity(getInputVector());
   liz.updatePosition();
@@ -66,6 +101,9 @@ int main() {
     // RenderWindow
     // window.draw(rect);
 
+    // liz.changeVelocity(
+    //     getTurnInput(liz.getBodySegmentsFromIndex(0).getShape().getRotation()),
+    //     false);
     liz.changeVelocity(getInputVector());
     liz.updatePosition();
     liz.applyFriction();

@@ -18,8 +18,8 @@ public:
   std::array<BodySegment, 15> body_parts;
   std::array<sf::Vector2f, 15 * 2> shape_points; // has to be double body_parts
   std::array<sf::ConvexShape, 15> lizard_shapes;
-  std::array<int, 15> segment_sizes = {35, 10, 15, 35, 45, 45, 20, 10,
-                                       10, 10, 10, 10, 8,  5,  1
+  std::array<int, 15> segment_sizes = {30, 15, 35, 65, 45, 20, 10, 10,
+                                       10, 10, 9,  7,  5,  3,  1
 
   };
 
@@ -63,21 +63,43 @@ public:
           (body_parts[i].getRadius() + body_parts[i - 1].getRadius()) + 15) {
         sf::Vector2f direction =
             body_parts[i - 1].getPosition() - body_parts[i].getPosition();
-        body_parts[i].changeVelocity(direction);
-        body_parts[i].shape.setRotation(direction.angle());
-        body_parts[i].setVelocityMagnitude(speed);
 
-        // body_parts[i].shape.setPosition(body_parts[i].getPosition());
-      }
-      for (int i = 1; i < body_parts.size(); i++) {
-        float dist_to_mother_segment = vectorDistance(
-            body_parts[i].getPosition(), body_parts[i - 1].getPosition());
-        if (dist_to_mother_segment <
-            (body_parts[i].getRadius() + body_parts[i - 1].getRadius())) {
-          sf::Vector2f direction =
-              body_parts[i].getPosition() - body_parts[i - 1].getPosition();
+        // TODO: restrict possible angles, try moving objects back if it
+        // violates angle restrictions
+
+        if (fabs(body_parts[i].getShape().getRotation().asDegrees() -
+                 body_parts[i - 1].getShape().getRotation().asDegrees()) >
+            135) {
+          body_parts[i].changeVelocity(-direction);
+          body_parts[i].shape.setRotation(direction.angle());
+          body_parts[i].setVelocityMagnitude(speed);
+        } else {
+
           body_parts[i].changeVelocity(direction);
+          body_parts[i].shape.setRotation(direction.angle());
+          body_parts[i].setVelocityMagnitude(speed);
         }
+
+        // body_parts[i].changeVelocity(direction);
+        // body_parts[i].shape.setRotation(direction.angle());
+        // body_parts[i].setVelocityMagnitude(speed);
+        std::cout << i << " "
+                  << fabs(
+                         body_parts[i].getShape().getRotation().asDegrees() -
+                         body_parts[i - 1].getShape().getRotation().asDegrees())
+                  << "\n";
+        //  body_parts[i].shape.setPosition(body_parts[i].getPosition());
+      }
+    }
+    for (int i = 1; i < body_parts.size(); i++) {
+      float dist_to_mother_segment = vectorDistance(
+          body_parts[i].getPosition(), body_parts[i - 1].getPosition());
+      // float allowedAngles
+      if (dist_to_mother_segment <
+          (body_parts[i].getRadius() + body_parts[i - 1].getRadius())) {
+        sf::Vector2f direction =
+            body_parts[i].getPosition() - body_parts[i - 1].getPosition();
+        body_parts[i].changeVelocity(direction);
       }
     }
     for (int i = 0; i < body_parts.size(); i++) {
@@ -104,13 +126,7 @@ public:
   }
 
   void setLizardShape() {
-    // lizard_shape.setPointCount(shape_points.size() + 1);
     getShapePointsFromParts();
-    //// lizard_shape.setOrigin(getPosition());
-    // lizard_shape.setPoint(0, getPosition());
-    // for (int i = 0; i < shape_points.size(); i++) {
-    //   lizard_shape.setPoint(i + 1, shape_points[i]);
-    // }
     lizard_shapes[0].setPointCount(3);
     lizard_shapes[0].setPoint(0,
                               body_parts[0].getPointOnRadius(sf::degrees(0)));
