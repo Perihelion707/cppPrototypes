@@ -53,9 +53,9 @@ int main() {
   Lizard liz;
 
   sf::CircleShape testShape;
-  testShape.setOrigin(sf::Vector2f(4, 4));
-  testShape.setPosition(sf::Vector2f(0, 0));
+  testShape.setOrigin(sf::Vector2f(8, 8));
   testShape.setRadius(8);
+  testShape.setPosition(sf::Vector2f(0, 0));
   testShape.setFillColor(sf::Color::Green);
 
   window.requestFocus();
@@ -69,6 +69,7 @@ int main() {
     liz.changeVelocity(getInputVector());
     liz.updatePosition();
     liz.applyFriction();
+    liz.setLizardShape();
     // string speed = std::to_string(liz.getVelocity().length());
     // stringstream test;
     // test<<speed.str()
@@ -78,11 +79,13 @@ int main() {
     // updateLizard(liz);
     window.clear();
     window.draw(testShape);
-    // window.draw(liz.rect);
-    // window.draw(liz.getBodySegmentsFromIndex(0).shape);
-    // window.draw(Speedometer);
+    // window.draw(liz.lizard_shape);
+    //  window.draw(liz.rect);
+    //  window.draw(liz.getBodySegmentsFromIndex(0).shape);
+    //  window.draw(Speedometer);
     for (int i = 0; i < liz.body_parts.size(); i++) {
-      window.draw(liz.getBodySegmentsFromIndex(i).getShape());
+      window.draw(liz.lizard_shapes[i]);
+      // window.draw(liz.getBodySegmentsFromIndex(i).getShape());
     }
     window.display();
     // test if escape is pressed to close app

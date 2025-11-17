@@ -2,9 +2,11 @@
 #include "MoveableObject.cpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector2.hpp>
-// #include <array>
+#include <array>
 #include <cmath>
 #include <iostream>
 // #include "MoveableObject.cpp"
@@ -14,9 +16,19 @@ class Lizard : public MoveableObject {
 public:
   // BodySegment body_parts[1];
   std::array<BodySegment, 15> body_parts;
+  std::array<sf::Vector2f, 15 * 2> shape_points; // has to be double body_parts
+  std::array<sf::ConvexShape, 15> lizard_shapes;
+  std::array<int, 15> segment_sizes = {35, 10, 15, 35, 45, 45, 20, 10,
+                                       10, 10, 10, 10, 8,  5,  1
+
+  };
+
   Lizard() {
     populateBodyParts();
-    setMaxSpeed(15);
+    // lizard_shape.setPointCount(shape_points.size());
+    // std::cout << lizard_shape.getPointCount();
+    setLizardShape();
+    setMaxSpeed(12);
   }
 
   float vectorDistance(sf::Vector2f v1, sf::Vector2f v2) {
@@ -26,68 +38,53 @@ public:
   void updatePosition() override {
     if (getVelocity().length() > getMaxSpeed()) {
       setVelocityMagnitude(getMaxSpeed());
-      // setVelocity(sf::Vector2f(getMaxSpeed()*getVelocity().x,getMaxSpeed()*getV));
     }
-    // position += velocity;
-    std::cout << getVelocity().length() << '\n';
     setPosition(getPosition() + getVelocity());
-    // getBodySegmentsFromIndex(0).setPosition(getPosition());
     pullBodyParts();
-
-    // sf::CircleShape tempCirc = getBodySegmentsFromIndex(0).getShape();
-    // tempCirc.setPosition(getPosition());
-    // body_parts[0] = tempCirc;
-    // rect.setPosition(getPosition());
-    // std::cout << "lizard position: " << getPosition().x << " " <<
-    // getPosition().y <<"\n";
   }
 
   void pullBodyParts() {
 
-    float speed = 10;
+    float speed = getMaxSpeed() - 1; // getVelocity().length();
 
-    body_parts[0].setPosition(getPosition());
-    body_parts[0].updatePosition();
+    sf::Vector2f head_dir = getPosition() - body_parts[0].getPosition();
+    if (vectorDistance(body_parts[0].getPosition(), getPosition()) > 15) {
+      body_parts[0].changeVelocity(head_dir);
+      body_parts[0].shape.setRotation(head_dir.normalized().angle());
+      // body_parts[0].setVelocityMagnitude(getVelocity().length());
+      body_parts[0].setVelocityMagnitude(speed);
+    }
+
     for (int i = body_parts.size() - 1; i > 0; i--) {
       float dist_to_mother_segment = vectorDistance(
           body_parts[i].getPosition(), body_parts[i - 1].getPosition());
 
       if (dist_to_mother_segment >
           (body_parts[i].getRadius() + body_parts[i - 1].getRadius()) + 15) {
-        // body_parts[i].setPosition(moveToward(
-        //       body_parts[i].getPosition(),
-        //       body_parts[i-1].getPosition(),
-        //       speed//getVelocity().length()
-        //   ));
-        body_parts[i].changeVelocity(body_parts[i - 1].getPosition() -
-                                     body_parts[i].getPosition());
+        sf::Vector2f direction =
+            body_parts[i - 1].getPosition() - body_parts[i].getPosition();
+        body_parts[i].changeVelocity(direction);
+        body_parts[i].shape.setRotation(direction.angle());
+        body_parts[i].setVelocityMagnitude(speed);
 
-        body_parts[i].setVelocityMagnitude(getVelocity().length());
+        // body_parts[i].shape.setPosition(body_parts[i].getPosition());
       }
+      for (int i = 1; i < body_parts.size(); i++) {
+        float dist_to_mother_segment = vectorDistance(
+            body_parts[i].getPosition(), body_parts[i - 1].getPosition());
+        if (dist_to_mother_segment <
+            (body_parts[i].getRadius() + body_parts[i - 1].getRadius())) {
+          sf::Vector2f direction =
+              body_parts[i].getPosition() - body_parts[i - 1].getPosition();
+          body_parts[i].changeVelocity(direction);
+        }
+      }
+    }
+    for (int i = 0; i < body_parts.size(); i++) {
       body_parts[i].updatePosition();
       body_parts[i].applyFriction();
-
-      // body_parts[i].shape.setPosition(body_parts[i].getPosition());
-    }
-    for (int i = 1; i < body_parts.size(); i++) {
-      float dist_to_mother_segment = vectorDistance(
-          body_parts[i].getPosition(), body_parts[i - 1].getPosition());
-      if (dist_to_mother_segment <
-          (body_parts[i].getRadius() + body_parts[i - 1].getRadius())) {
-        // body_parts[i].setPosition(moveToward(
-        //       body_parts[i].getPosition(),
-        //       body_parts[i].getPosition()-body_parts[i-1].getPosition(),
-        //       speed//getVelocity().length()
-        //   ));
-        body_parts[i].changeVelocity(body_parts[i].getPosition() -
-                                     body_parts[i - 1].getPosition());
-      }
-
-      // body_parts[i].updatePosition();
-      // body_parts[i].applyFriction();
     }
   }
-
   void populateBodyParts() {
     // std::array<int, 2> tests;
 
@@ -97,12 +94,70 @@ public:
       // BodySegment* new_segment = new BodySegment(getPosition(), 10 - i);
       // body_parts[i] = new_segment;
       body_parts[i].setPosition(getPosition());
-      body_parts[i].setRadius((float)10 - i / 2);
-      body_parts[i].setFriction(getMaxSpeed() / 2);
+      body_parts[i].setRadius(segment_sizes[i]);
+      body_parts[i].setMaxSpeed(getMaxSpeed());
+      body_parts[i].setFriction(getMaxSpeed() * .8);
       // body_parts[i].setMaxSpeed(9);
-      body_parts[i].setAccel(8);
+      body_parts[i].setAccel(getAccel());
       // delete new_segment;
     }
+  }
+
+  void setLizardShape() {
+    // lizard_shape.setPointCount(shape_points.size() + 1);
+    getShapePointsFromParts();
+    //// lizard_shape.setOrigin(getPosition());
+    // lizard_shape.setPoint(0, getPosition());
+    // for (int i = 0; i < shape_points.size(); i++) {
+    //   lizard_shape.setPoint(i + 1, shape_points[i]);
+    // }
+    lizard_shapes[0].setPointCount(3);
+    lizard_shapes[0].setPoint(0,
+                              body_parts[0].getPointOnRadius(sf::degrees(0)));
+
+    lizard_shapes[0].setPoint(1,
+                              body_parts[0].getPointOnRadius(sf::degrees(-90)));
+
+    lizard_shapes[0].setPoint(2,
+                              body_parts[0].getPointOnRadius(sf::degrees(90)));
+
+    // lizard_shapes[0].setPoint(
+    //     3, body_parts[1].getPointOnRadius(sf::degrees(-90).wrapSigned()));
+
+    // lizard_shapes[0].setPoint(
+    //     4, body_parts[1].getPointOnRadius(sf::degrees(90).wrapSigned()));
+
+    for (int i = 1; i < body_parts.size(); i++) {
+      lizard_shapes[i].setPointCount(4);
+
+      lizard_shapes[i].setPoint(
+          0, body_parts[i - 1].getPointOnRadius(sf::degrees(90).wrapSigned()));
+
+      lizard_shapes[i].setPoint(
+          1, body_parts[i - 1].getPointOnRadius(sf::degrees(-90).wrapSigned()));
+
+      lizard_shapes[i].setPoint(
+          2, body_parts[i].getPointOnRadius(sf::degrees(-90).wrapSigned()));
+
+      lizard_shapes[i].setPoint(
+          3, body_parts[i].getPointOnRadius(sf::degrees(90).wrapSigned()));
+    }
+  }
+
+  void getShapePointsFromParts() {
+    for (int i = 0; i < body_parts.size(); i++) {
+      sf::Angle angle;
+      angle = sf::degrees(90);
+      shape_points[i * 2] = body_parts[i].getPointOnRadius(angle);
+      angle = sf::degrees(-90);
+      shape_points[i * 2 + 1] = body_parts[i].getPointOnRadius(angle);
+    }
+    // for (int i = body_parts.size() - 1; i >= 0; i--) {
+    //   sf::Angle angle;
+    //   angle = sf::degrees(-90);
+    //   shape_points[i + body_parts.size() ] =
+    //       body_parts[i].getPointOnRadius(angle);
+    // }
   }
 
   BodySegment getBodySegmentsFromIndex(int index) {
