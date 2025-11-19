@@ -131,10 +131,15 @@ int main() {
     window.draw(Speedometer);
     for (int i = 0; i < liz.body_parts.size(); i++) {
       switch (display_type) {
+
       case 1:
+        liz.setLizardLooks(true);
         window.draw(liz.getBodySegmentsFromIndex(i).getShape());
         break;
       case 2:
+        window.draw(liz.getBodySegmentsFromIndex(i).getShape());
+        break;
+      case 3:
         window.draw(liz.lizard_shapes[i]);
         window.draw(liz.getBodySegmentsFromIndex(i).getShape());
         break;
@@ -150,7 +155,7 @@ int main() {
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
         window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
-        display_type = cycleInt(display_type, 3);
+        display_type = cycleInt(display_type, 4);
         std::cout << "Cycled displayType\n";
       }
     }

@@ -16,6 +16,7 @@
 class Lizard : public MoveableObject {
 public:
   // BodySegment body_parts[1];
+  bool spite_filled = true;
   std::array<BodySegment, 30> body_parts;
   std::array<sf::Vector2f, 30 * 2> shape_points; // has to be double body_parts
   std::array<sf::ConvexShape, 30> lizard_shapes;
@@ -109,11 +110,12 @@ public:
       // delete new_segment;
     }
   }
-  void setLizardLooks() {
+  void setLizardLooks(bool filled = false) {
     for (int i = 0; i < lizard_shapes.size(); i++) {
       lizard_shapes[i].setOutlineThickness(2);
       lizard_shapes[i].setOutlineColor(sf::Color::White);
-      lizard_shapes[i].setFillColor(sf::Color::Transparent);
+      if (!filled)
+        lizard_shapes[i].setFillColor(sf::Color::Transparent);
     }
   }
   void setLizardShape() {
