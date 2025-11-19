@@ -2,6 +2,7 @@
 #include "MoveableObject.cpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/System/Angle.hpp>
@@ -15,11 +16,12 @@
 class Lizard : public MoveableObject {
 public:
   // BodySegment body_parts[1];
-  std::array<BodySegment, 15> body_parts;
-  std::array<sf::Vector2f, 15 * 2> shape_points; // has to be double body_parts
-  std::array<sf::ConvexShape, 15> lizard_shapes;
-  std::array<int, 15> segment_sizes = {30, 15, 35, 65, 45, 20, 10, 10,
-                                       10, 10, 9,  7,  5,  3,  1
+  std::array<BodySegment, 30> body_parts;
+  std::array<sf::Vector2f, 30 * 2> shape_points; // has to be double body_parts
+  std::array<sf::ConvexShape, 30> lizard_shapes;
+  std::array<int, 30> segment_sizes = {
+      20, 30, 10, 15, 35, 45, 65, 65, 45, 40, 25, 20, 15, 10, 10, 10,
+      10, 10, 10, 10, 9,  9,  7,  7,  5,  5,  5,  5,  5,  5
 
   };
 
@@ -28,6 +30,7 @@ public:
     // lizard_shape.setPointCount(shape_points.size());
     // std::cout << lizard_shape.getPointCount();
     setLizardShape();
+    setLizardLooks();
     setMaxSpeed(12);
   }
 
@@ -48,60 +51,42 @@ public:
     float speed = getMaxSpeed() - 1; // getVelocity().length();
 
     sf::Vector2f head_dir = getPosition() - body_parts[0].getPosition();
-    if (vectorDistance(body_parts[0].getPosition(), getPosition()) > 15) {
-      body_parts[0].changeVelocity(head_dir);
+    if (head_dir.length() > 20) {
+      body_parts[0].setPosition(moveToward(
+          body_parts[0].getPosition(),
+          body_parts[0].getPosition() + head_dir.normalized() * speed, 15));
       body_parts[0].shape.setRotation(head_dir.normalized().angle());
-      // body_parts[0].setVelocityMagnitude(getVelocity().length());
-      body_parts[0].setVelocityMagnitude(speed);
-    }
-
-    for (int i = body_parts.size() - 1; i > 0; i--) {
-      float dist_to_mother_segment = vectorDistance(
-          body_parts[i].getPosition(), body_parts[i - 1].getPosition());
-
-      if (dist_to_mother_segment >
-          (body_parts[i].getRadius() + body_parts[i - 1].getRadius()) + 15) {
-        sf::Vector2f direction =
-            body_parts[i - 1].getPosition() - body_parts[i].getPosition();
-
-        // TODO: restrict possible angles, try moving objects back if it
-        // violates angle restrictions
-
-        if (fabs(body_parts[i].getShape().getRotation().asDegrees() -
-                 body_parts[i - 1].getShape().getRotation().asDegrees()) >
-            135) {
-          body_parts[i].changeVelocity(-direction);
-          body_parts[i].shape.setRotation(direction.angle());
-          body_parts[i].setVelocityMagnitude(speed);
-        } else {
-
-          body_parts[i].changeVelocity(direction);
-          body_parts[i].shape.setRotation(direction.angle());
-          body_parts[i].setVelocityMagnitude(speed);
-        }
-
-        // body_parts[i].changeVelocity(direction);
-        // body_parts[i].shape.setRotation(direction.angle());
-        // body_parts[i].setVelocityMagnitude(speed);
-        std::cout << i << " "
-                  << fabs(
-                         body_parts[i].getShape().getRotation().asDegrees() -
-                         body_parts[i - 1].getShape().getRotation().asDegrees())
-                  << "\n";
-        //  body_parts[i].shape.setPosition(body_parts[i].getPosition());
-      }
     }
     for (int i = 1; i < body_parts.size(); i++) {
       float dist_to_mother_segment = vectorDistance(
           body_parts[i].getPosition(), body_parts[i - 1].getPosition());
-      // float allowedAngles
-      if (dist_to_mother_segment <
-          (body_parts[i].getRadius() + body_parts[i - 1].getRadius())) {
-        sf::Vector2f direction =
-            body_parts[i].getPosition() - body_parts[i - 1].getPosition();
-        body_parts[i].changeVelocity(direction);
+      float follow_dist =
+          (body_parts[i].getRadius() + body_parts[i - 1].getRadius() + 5);
+      sf::Vector2f direction =
+          body_parts[i - 1].getPosition() - body_parts[i].getPosition();
+      if (dist_to_mother_segment > follow_dist) {
+
+        // TODO: restrict possible angles, try moving objects back if it
+        // violates angle restrictions
+        float move_amount = dist_to_mother_segment / 2;
+        body_parts[i].setPosition(moveToward(
+            body_parts[i].getPosition(),
+            body_parts[i].getPosition() + (direction.normalized() * speed),
+            15));
+        body_parts[i].shape.setRotation(direction.angle());
       }
     }
+    // for (int i = 1; i < body_parts.size(); i++) {
+    //   float dist_to_mother_segment = vectorDistance(
+    //       body_parts[i].getPosition(), body_parts[i - 1].getPosition());
+    //   // float allowedAngles
+    //   if (dist_to_mother_segment <
+    //       (body_parts[i].getRadius() + body_parts[i - 1].getRadius())) {
+    //     sf::Vector2f direction =
+    //         body_parts[i].getPosition() - body_parts[i - 1].getPosition();
+    //     body_parts[i].changeVelocity(direction);
+    //   }
+    // }
     for (int i = 0; i < body_parts.size(); i++) {
       body_parts[i].updatePosition();
       body_parts[i].applyFriction();
@@ -124,7 +109,13 @@ public:
       // delete new_segment;
     }
   }
-
+  void setLizardLooks() {
+    for (int i = 0; i < lizard_shapes.size(); i++) {
+      lizard_shapes[i].setOutlineThickness(2);
+      lizard_shapes[i].setOutlineColor(sf::Color::White);
+      lizard_shapes[i].setFillColor(sf::Color::Transparent);
+    }
+  }
   void setLizardShape() {
     getShapePointsFromParts();
     lizard_shapes[0].setPointCount(3);
@@ -136,12 +127,6 @@ public:
 
     lizard_shapes[0].setPoint(2,
                               body_parts[0].getPointOnRadius(sf::degrees(90)));
-
-    // lizard_shapes[0].setPoint(
-    //     3, body_parts[1].getPointOnRadius(sf::degrees(-90).wrapSigned()));
-
-    // lizard_shapes[0].setPoint(
-    //     4, body_parts[1].getPointOnRadius(sf::degrees(90).wrapSigned()));
 
     for (int i = 1; i < body_parts.size(); i++) {
       lizard_shapes[i].setPointCount(4);

@@ -79,6 +79,12 @@ void updateLizard(Lizard liz) {
   // liz.applyFriction();
 }
 
+int cycleInt(int i, int cycleInt) {
+  i++;
+  i = i % cycleInt;
+  return i;
+}
+
 int main() {
   sf::RenderWindow window(sf::VideoMode({1200, 800}), "MoveSquare",
                           sf::Style::None, sf::State::Windowed);
@@ -94,10 +100,12 @@ int main() {
   testShape.setFillColor(sf::Color::Green);
 
   window.requestFocus();
-  // const sf::Font font("arial.ttf");
-  // sf::Text Speedometer("debug");
-
+  const sf::Font font(
+      "/usr/share/fonts/TTF/JetBrainsMonoNLNerdFontPropo-Medium.ttf");
+  sf::Text Speedometer(font, "Press [SPACE] to cycle display types.", 10);
+  int display_type = 0;
   while (window.isOpen()) {
+
     // RenderWindow
     // window.draw(rect);
 
@@ -120,10 +128,19 @@ int main() {
     // window.draw(liz.lizard_shape);
     //  window.draw(liz.rect);
     //  window.draw(liz.getBodySegmentsFromIndex(0).shape);
-    //  window.draw(Speedometer);
+    window.draw(Speedometer);
     for (int i = 0; i < liz.body_parts.size(); i++) {
-      window.draw(liz.lizard_shapes[i]);
-      // window.draw(liz.getBodySegmentsFromIndex(i).getShape());
+      switch (display_type) {
+      case 1:
+        window.draw(liz.getBodySegmentsFromIndex(i).getShape());
+        break;
+      case 2:
+        window.draw(liz.lizard_shapes[i]);
+        window.draw(liz.getBodySegmentsFromIndex(i).getShape());
+        break;
+      default:
+        window.draw(liz.lizard_shapes[i]);
+      }
     }
     window.display();
     // test if escape is pressed to close app
@@ -132,6 +149,10 @@ int main() {
         window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
         window.close();
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+        display_type = cycleInt(display_type, 3);
+        std::cout << "Cycled displayType\n";
+      }
     }
   }
   return 0;
