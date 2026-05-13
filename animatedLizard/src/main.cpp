@@ -100,9 +100,9 @@ int main() {
   testShape.setFillColor(sf::Color::Green);
 
   window.requestFocus();
-  const sf::Font font(
-      "/usr/share/fonts/TTF/JetBrainsMonoNLNerdFontPropo-Medium.ttf");
-  sf::Text Speedometer(font, "Press [SPACE] to cycle display types.", 10);
+  //const sf::Font font(
+  //    "/usr/share/fonts/TTF/JetBrainsMonoNLNerdFontPropo-Medium.ttf");
+  //sf::Text Speedometer(font, "Press [SPACE] to cycle display types.", 10);
   int display_type = 0;
   while (window.isOpen()) {
 
@@ -128,7 +128,7 @@ int main() {
     // window.draw(liz.lizard_shape);
     //  window.draw(liz.rect);
     //  window.draw(liz.getBodySegmentsFromIndex(0).shape);
-    window.draw(Speedometer);
+    //window.draw(Speedometer);
     for (int i = 0; i < liz.body_parts.size(); i++) {
       switch (display_type) {
 
