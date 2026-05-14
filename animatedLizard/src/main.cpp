@@ -18,39 +18,39 @@ float getSign(float number) { return number / std::abs(number); }
 
 sf::Vector2f getInputVector() {
 
-  sf::Vector2f input_dir;
+  sf::Vector2f inputDir;
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-    input_dir.y = -1;
+    inputDir.y = -1;
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-    input_dir.y = 1;
+    inputDir.y = 1;
   } else {
-    input_dir.y = 0;
+    inputDir.y = 0;
   }
 
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-    input_dir.x = -1;
+    inputDir.x = -1;
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-    input_dir.x = 1;
+    inputDir.x = 1;
   } else {
-    input_dir.x = 0;
+    inputDir.x = 0;
   }
-  if (fabs(input_dir.length()) > 0) {
-    return input_dir.normalized();
+  if (fabs(inputDir.length()) > 0) {
+    return inputDir.normalized();
   }
-  return input_dir;
+  return inputDir;
 }
 
 sf::Angle turn() {
-  float turn_amount = 00;
-  float turn_speed = 40;
+  float turnAmount = 00;
+  float turnSpeed = 40;
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-    turn_amount -= turn_speed;
+    turnAmount -= turnSpeed;
   }
 
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-    turn_amount += turn_speed;
+    turnAmount += turnSpeed;
   }
-  return sf::degrees(turn_amount);
+  return sf::degrees(turnAmount);
 }
 
 sf::Vector2f angleToVec2(sf::Angle angle) {
@@ -64,13 +64,13 @@ sf::Vector2f angleToVec2(sf::Angle angle) {
 sf::Vector2f getTurnInput(sf::Angle angle) {
   angle += turn();
   float speed = 10;
-  sf::Vector2f input_dir;
+  sf::Vector2f inputDir;
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-    input_dir += angleToVec2(angle);
-    input_dir = input_dir.normalized() * speed;
+    inputDir += angleToVec2(angle);
+    inputDir = inputDir.normalized() * speed;
   }
 
-  return input_dir;
+  return inputDir;
 }
 
 void updateLizard(Lizard liz) {
@@ -103,7 +103,7 @@ int main() {
   //const sf::Font font(
   //    "/usr/share/fonts/TTF/JetBrainsMonoNLNerdFontPropo-Medium.ttf");
   //sf::Text Speedometer(font, "Press [SPACE] to cycle display types.", 10);
-  int display_type = 0;
+  int displayType = 0;
   while (window.isOpen()) {
 
     // RenderWindow
@@ -129,8 +129,8 @@ int main() {
     //  window.draw(liz.rect);
     //  window.draw(liz.getBodySegmentsFromIndex(0).shape);
     //window.draw(Speedometer);
-    for (int i = 0; i < liz.body_parts.size(); i++) {
-      switch (display_type) {
+    for (int i = 0; i < liz.bodyParts.size(); i++) {
+      switch (displayType) {
 
       case 1:
         liz.setLizardLooks(true);
@@ -140,11 +140,11 @@ int main() {
         window.draw(liz.getBodySegmentsFromIndex(i).getShape());
         break;
       case 3:
-        window.draw(liz.lizard_shapes[i]);
+        window.draw(liz.lizardShapes[i]);
         window.draw(liz.getBodySegmentsFromIndex(i).getShape());
         break;
       default:
-        window.draw(liz.lizard_shapes[i]);
+        window.draw(liz.lizardShapes[i]);
       }
     }
     window.display();
@@ -155,7 +155,7 @@ int main() {
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
         window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
-        display_type = cycleInt(display_type, 4);
+        displayType = cycleInt(displayType, 4);
         std::cout << "Cycled displayType\n";
       }
     }

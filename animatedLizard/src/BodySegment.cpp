@@ -4,7 +4,7 @@
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <iostream>
-
+#pragma once
 class BodySegment : public MoveableObject {
 private:
   float radius;
